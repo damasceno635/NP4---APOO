@@ -1,0 +1,71 @@
+body {
+    font-family: Arial, sans-serif;
+    background-image: linear-gradient(to right, rgb(89, 63, 123), rgb(43, 32, 100));
+    padding: 50px;
+    margin-top: 5rem;
+}
+
+img {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 400px;
+    margin: auto;
+    line-height: 30px;
+}
+
+#cartao, #senha {
+    width: 94%;
+}
+
+h2 {
+    text-align: center;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+button {
+    width: 70%;
+    padding: 10px;
+    margin: 5px 0;
+    margin-left: 60px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 20px;
+}
+
+#mensagem {
+    text-align: center;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+#mensagem-final {
+    margin-left: 28%;
+    line-height: 3rem;
+}
+
+#recibo {
+    background: #eee;
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 5px;
+    display: none;
+    line-height: 29px;
+}
+
+.oculto {
+    display: none;
+} 

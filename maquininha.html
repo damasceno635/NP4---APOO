@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador de Maquininha</title>
+  <link rel="shortcut icon" href="icon_atm.png">
+  <link href="style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <img src="icon_atm.png" class="img" alt="Imagem ilustrativa de um Caixa Eletrônico">
+    <h2 style="margin-left: 10%;">Simulador de Maquininha</h2>
+
+    <div id="etapa-cartao">
+      <input type="text" id="cartao" placeholder="Número do Cartão (16 dígitos)">
+      <button id="btnConfirmarCartao">Confirmar Cartão</button>
+      <button id="btnLimparCartao">Limpar</button>
+      <button id="btnCancelar1">Cancelar</button>
+    </div>
+
+    <div id="etapa-senha" class="oculto">
+      <input type="password" id="senha" placeholder="Senha (6 dígitos)">
+      <button id="btnConfirmarSenha">Confirmar Senha</button>
+      <button id="btnCancelar2">Cancelar</button>
+    </div>
+
+    <div id="etapa-final" class="oculto">
+      <div id="mensagem-final"></div>
+      <button id="btnImprimir">Imprimir Via do Cliente</button>
+      <button id="btnVoltar">Voltar ao Início</button>
+    </div>
+
+    <div id="recibo"></div>
+    <div id="mensagem"></div>
+  </div>
+
+  <script>
+    class Maquininha {
+      constructor() {
+        this.tentativas = 0;
+        this.bloqueado = false;
+        this.senhaCorreta = "123456";
+        this.inicializarEventos();
+      }
+
+      inicializarEventos() {
+        document.getElementById('btnConfirmarCartao').onclick = () => this.confirmarCartao();
+        document.getElementById('btnLimparCartao').onclick = () => this.limparCartao();
+        document.getElementById('btnCancelar1').onclick = () => this.cancelarOperacao();
+        document.getElementById('btnCancelar2').onclick = () => this.cancelarOperacao();
+        document.getElementById('btnConfirmarSenha').onclick = () => this.confirmarSenha();
+        document.getElementById('btnImprimir').onclick = () => this.imprimirRecibo();
+        document.getElementById('btnVoltar').onclick = () => this.voltarAoInicio();
+
+        document.getElementById('cartao').addEventListener('input', function () {
+          let valor = this.value.replace(/\D/g, '').slice(0, 16);
+          this.value = valor.replace(/(.{4})/g, '$1 ').trim();
+        });
+
+        document.getElementById('senha').addEventListener('input', function () {
+          this.value = this.value.replace(/\D/g, '').slice(0, 6);
+        });
+      }
+
+      mostrarMensagem(msg) {
+        document.getElementById('mensagem').textContent = msg;
+      }
+
+      confirmarCartao() {
+        if (this.bloqueado) {
+          this.mostrarMensagem("Cartão bloqueado por 2 minutos. Aguarde...");
+          return;
+        }
+
+        const cartao = document.getElementById('cartao').value.replace(/\s/g, '');
+        if (cartao.length !== 16) {
+          this.mostrarMensagem("O número do cartão deve conter exatamente 16 dígitos.");
+          return;
+        }
+
+        document.getElementById('etapa-cartao').classList.add('oculto');
+        document.getElementById('etapa-senha').classList.remove('oculto');
+        this.mostrarMensagem("Digite sua senha.");
+      }
+
+      limparCartao() {
+        document.getElementById('cartao').value = '';
+        this.mostrarMensagem("Número do cartão limpo.");
+      }
+
+      cancelarOperacao() {
+        document.getElementById('cartao').value = '';
+        document.getElementById('senha').value = '';
+        document.getElementById('etapa-cartao').classList.remove('oculto');
+        document.getElementById('etapa-senha').classList.add('oculto');
+        document.getElementById('etapa-final').classList.add('oculto');
+        document.getElementById('recibo').style.display = 'none';
+        this.tentativas = 0;
+        this.mostrarMensagem("Operação cancelada.");
+      }
+
+      confirmarSenha() {
+        const senha = document.getElementById('senha').value;
+
+        if (this.bloqueado) {
+          this.mostrarMensagem("Operação bloqueada. Aguarde 2 minutos.");
+          return;
+        }
+
+        if (senha.length !== 6) {
+          this.mostrarMensagem("A senha deve conter exatamente 6 números.");
+          return;
+        }
+
+        if (senha === this.senhaCorreta) {
+          this.mostrarMensagem("✅ Pagamento aprovado!");
+          document.getElementById('etapa-senha').classList.add('oculto');
+          document.getElementById('etapa-final').classList.remove('oculto');
+          document.getElementById('mensagem-final').textContent = "🔓 Acesso concedido!";
+        } else {
+          this.tentativas++;
+          if (this.tentativas >= 3) {
+            document.getElementById('senha').value = '';
+            this.mostrarMensagem("❌ 3 tentativas erradas. Bloqueado por 2 minutos.");
+            this.bloquearTemporariamente();
+          } else {
+            document.getElementById('senha').value = '';
+            this.mostrarMensagem(`❌ Senha incorreta. Tentativas restantes: ${3 - this.tentativas}`);
+          }
+        }
+      }
+
+      bloquearTemporariamente() {
+        this.bloqueado = true;
+        setTimeout(() => {
+          this.bloqueado = false;
+          this.tentativas = 0;
+          this.mostrarMensagem("⏱️ Bloqueio encerrado. Tente novamente.");
+          document.getElementById('etapa-cartao').classList.remove('oculto');
+          document.getElementById('etapa-senha').classList.add('oculto');
+        }, 120000);
+      }
+
+      imprimirRecibo() {
+        const cartao = document.getElementById('cartao').value;
+        const recibo = `
+          <strong>VIA DO CLIENTE</strong><br><br>
+          Cartão: ${cartao}<br>
+          Status: Aprovado<br>
+          Valor: R$ 100,00<br>
+          Data: ${new Date().toLocaleString()}`;
+        const reciboDiv = document.getElementById('recibo');
+        reciboDiv.innerHTML = recibo;
+        reciboDiv.style.display = 'block';
+        this.mostrarMensagem("🧾 Recibo impresso.");
+      }
+
+      voltarAoInicio() {
+        document.getElementById('cartao').value = '';
+        document.getElementById('senha').value = '';
+        this.tentativas = 0;
+        document.getElementById('etapa-final').classList.add('oculto');
+        document.getElementById('etapa-cartao').classList.remove('oculto');
+        document.getElementById('recibo').style.display = 'none';
+        this.mostrarMensagem("Início pronto para nova operação.");
+      }
+    }
+
+    // Instancia o sistema da maquininha ao carregar a página
+    window.onload = () => new Maquininha();
+  </script>
+</body>
+</html>
